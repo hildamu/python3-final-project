@@ -1,100 +1,110 @@
 import sqlite3
 
+def setup_database():
+    conn = sqlite3.connect('todo.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY,
+            task TEXT NOT NULL,
+            completed BOOLEAN NOT NULL CHECK (completed IN (0, 1))
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 class Task:
-
-    def __init__(self, id, task, completed):
-        self.id = id
+    def __init__(self, task, completed=False):
         self.task = task
         self.completed = completed
-        
 
-    def mark_complete(self):
-        self.completed = True
-
-    def __str__(self):
-        status = "✓" if self.completed else " "
-        return f"{self.id}. [{status}] {self.task}"
+    def save(self):
+        conn = sqlite3.connect('todo.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO tasks (task, completed) VALUES (?, ?)
+        ''', (self.task, self.completed))
+        conn.commit()
+        conn.close()
 
 
 class TaskList:
+    @staticmethod
+    def get_all():
+        conn = sqlite3.connect('todo.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, task, completed FROM tasks')
+        tasks = cursor.fetchall()
+        conn.close()
+        return tasks
 
-    def __init__(self):
-        self.tasks = []
+    @staticmethod
+    def mark_complete(task_id):
+        conn = sqlite3.connect('todo.db')
+        cursor = conn.cursor()
+        cursor.execute('UPDATE tasks SET completed = 1 WHERE id = ?', (task_id,))
+        conn.commit()
+        conn.close()
 
-    def add_task(self, task):
-        self.tasks.append(task)
+    @staticmethod
+    def delete_task(task_id):
+        conn = sqlite3.connect('todo.db')
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+        conn.commit()
+        conn.close()
 
-    def view_tasks(self):
-        if not self.tasks:
-            print("Your to-do list is empty.")
-            return
-        for task in self.tasks:
-            print(task)
-
-    def mark_all_complete(self):
-        for task in self.tasks:
-            task.mark_complete()
-
-    def delete_task(self, task_id):
-        for index, task in enumerate(self.tasks):
-            if task.id == task_id:
-                del self.tasks[index]
-                print(f"Task with ID {task_id} deleted.")
-                return  
-        print(f"Task with ID {task_id} not found.")
-
-
-def create_table():
-    """Creates a 'tasks' table with 'id', 'task', and 'completed' columns."""
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS tasks
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed INTEGER)''')
-    conn.commit()
-    conn.close()
-
-
-def create_task(task):
-    """Adds a new task to the database, creating a Task object and storing the due date (if provided) internally."""
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO tasks (task, completed) VALUES (?, 0)", (task,))
-    conn.commit()
-    conn.close()
+def add_task(task):
+    new_task = Task(task)
+    new_task.save()
     print("Task added successfully!")
-    return Task(c.lastrowid, task, False)  
-
 
 def view_tasks():
-    """Retrieves and displays all tasks from the database, excluding due dates."""
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM tasks")
-    rows = c.fetchall()
-    task_list = TaskList()  
-    for row in rows:
-        task_list.add_task(Task(row[0], row[1], row[2]))  
-    task_list.view_tasks()  
-    conn.close()
-
+    tasks = TaskList.get_all()
+    if tasks:
+        print("Your to-do list:")
+        for task in tasks:
+            status = "✓" if task[2] else " "
+            print(f"{task[0]}. [{status}] {task[1]}")
+    else:
+        print("Your to-do list is empty.")
 
 def mark_complete(task_id):
-    """Marks a task as completed based on its ID."""
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("UPDATE tasks SET completed = 1 WHERE id =?", (task_id,))
-    conn.commit()
-    conn.close()
-    print(f"Task with ID {task_id} marked as complete.")
-
+    TaskList.mark_complete(task_id)
+    print("Task marked as complete!")
 
 def delete_task(task_id):
-    """Deletes a task from the database based on its ID."""
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("DELETE FROM tasks WHERE id =?", (task_id,))
-    conn.commit()
-    conn.close()
-    print(f"Task with ID {task_id} deleted.")
+    TaskList.delete_task(task_id)
+    print("Task deleted successfully!")
 
+def main():
+    setup_database()
+
+    while True:
+        print("\nMenu:")
+        print("1. Add Task")
+        print("2. View Tasks")
+        print("3. Mark Task as Complete")
+        print("4. Delete Task")
+        print("5. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            task = input("Enter the task: ")
+            add_task(task)
+        elif choice == "2":
+            view_tasks()
+        elif choice == "3":
+            task_id = int(input("Enter the task ID to mark as complete: "))
+            mark_complete(task_id)
+        elif choice == "4":
+            task_id = int(input("Enter the task ID to delete: "))
+            delete_task(task_id)
+        elif choice == "5":
+            print("Exiting program. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
