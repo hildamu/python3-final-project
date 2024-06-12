@@ -23,4 +23,16 @@ def delete_task(task_index, task_list):
         del task_list[task_index - 1]
         print("Task deleted successfully!")
     else:
-        print("Invalid task index.")       
+        print("Invalid task index.") 
+
+def main():
+    tasks = []
+
+    while True:
+        print("\nMenu:")
+        print("1. Add Task")
+        print("2. View Tasks")
+        print("3. Mark Task as Complete")
+        print("4. Delete Task")
+        print("5. Exit")
+        choice = input("Enter your choice: ")              
