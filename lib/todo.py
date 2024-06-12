@@ -1,13 +1,12 @@
 import sqlite3
 
 def create_table():
+    """Creates a 'tasks' table with 'id', 'task', and 'completed' columns."""
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tasks
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  task TEXT, 
-                  completed INTEGER)''')
-    conn.commit() 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed INTEGER)''')
+    conn.commit()
     conn.close()
 
 
