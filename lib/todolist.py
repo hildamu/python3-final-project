@@ -23,7 +23,7 @@ def delete_task(task_index, task_list):
         del task_list[task_index - 1]
         print("Task deleted successfully!")
     else:
-        print("Invalid task index.") 
+        print("Invalid task index.")
 
 def main():
     tasks = []
