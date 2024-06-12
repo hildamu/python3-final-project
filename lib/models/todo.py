@@ -1,40 +1,20 @@
 import sqlite3
 
-# def create_table():
-#     conn = sqlite3.connect('todo.db')
-#     c = conn.cursor()
-#     c.execute('''CREATE TABLE IF NOT EXISTS tasks
-#                  (task text, completed integer)''')
-#     conn.commit()
-#     conn.close()
 def create_table():
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
-
-    # Check if the tasks table exists and if it doesn't, recreate it with the id column
-    c.execute("PRAGMA table_info(tasks)")
-    columns = c.fetchall()
-    id_column_exists = any('id' in col for col in columns)
-
-    if not id_column_exists:
-        c.execute('''CREATE TABLE IF NOT EXISTS tasks
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed INTEGER)''')
-        conn.commit()
-        print("Table created successfully.")
-    else:
-        print("Table already exists.")
-
+    c.execute('''CREATE TABLE IF NOT EXISTS tasks
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed INTEGER)''')
+    conn.commit()
     conn.close()
-
-
 
 def add_task(task):
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
-    c.execute("INSERT INTO tasks VALUES (?, 0)", (task,))
+    c.execute("INSERT INTO tasks (task, completed) VALUES (?, 0)", (task,))
     conn.commit()
     conn.close()
-    print("Added successfully!")
+    print("Task added successfully!")
 
 def view_tasks():
     conn = sqlite3.connect('todo.db')
@@ -44,8 +24,8 @@ def view_tasks():
     if rows:
         print("Your to-do list:")
         for index, row in enumerate(rows, start=1):
-            status = "✓" if row[1] else " "
-            print(f"{index}. [{status}] {row[0]}")
+            status = "✓" if row[2] else " "
+            print(f"{index}. [{status}] {row[1]}")
     else:
         print("Your to-do list is empty.")
     conn.close()
@@ -56,7 +36,7 @@ def mark_complete(task_index):
     c.execute("SELECT * FROM tasks")
     rows = c.fetchall()
     if 0 < task_index <= len(rows):
-        c.execute("UPDATE tasks SET completed = 1 WHERE task =?", (rows[task_index - 1][0],))
+        c.execute("UPDATE tasks SET completed = 1 WHERE id =?", (rows[task_index - 1][0],))
         conn.commit()
         print("Task marked as complete!")
     else:
@@ -69,7 +49,7 @@ def delete_task(task_index):
     c.execute("SELECT * FROM tasks")
     rows = c.fetchall()
     if 0 < task_index <= len(rows):
-        c.execute("DELETE FROM tasks WHERE task =?", (rows[task_index - 1][0],))
+        c.execute("DELETE FROM tasks WHERE id =?", (rows[task_index - 1][0],))
         conn.commit()
         print("Task deleted successfully!")
     else:
@@ -107,4 +87,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
