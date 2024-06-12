@@ -1,12 +1,23 @@
 import sqlite3
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'models', 'todo.db')
+
+conn = sqlite3.connect(DB_PATH)
+
 
 def create_table():
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS tasks
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed INTEGER)''')
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  task TEXT, 
+                  completed INTEGER)''')
     conn.commit()
     conn.close()
+
+
 
 def add_task(task):
     conn = sqlite3.connect('todo.db')

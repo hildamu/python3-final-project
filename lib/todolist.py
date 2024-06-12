@@ -1,3 +1,13 @@
+import os
+import sys
+
+# Add the path to the models directory to sys.path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib', 'models'))
+
+# Import todo.py from the models directory
+import models.todo
+
+
 def add_task(task, task_list):
     task_list.append({"task": task, "completed": False})
     print("Task added successfully!")
