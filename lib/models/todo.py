@@ -42,3 +42,17 @@ def mark_complete(task_index):
     else:
         print("Invalid task index.")
     conn.close()
+
+def delete_task(task_index):
+    conn = sqlite3.connect('todo.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM tasks")
+    rows = c.fetchall()
+    if 0 < task_index <= len(rows):
+        c.execute("DELETE FROM tasks WHERE task =?", (rows[task_index - 1][0],))
+        conn.commit()
+        print("Task deleted successfully!")
+    else:
+        print("Invalid task index.")
+    conn.close()
+
