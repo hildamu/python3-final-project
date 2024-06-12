@@ -28,4 +28,17 @@ def view_tasks():
             print(f"{index}. [{status}] {row[0]}")
     else:
         print("Your to-do list is empty.")
-    conn.close()       
+    conn.close() 
+
+def mark_complete(task_index):
+    conn = sqlite3.connect('todo.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM tasks")
+    rows = c.fetchall()
+    if 0 < task_index <= len(rows):
+        c.execute("UPDATE tasks SET completed = 1 WHERE task =?", (rows[task_index - 1][0],))
+        conn.commit()
+        print("Task marked as complete!")
+    else:
+        print("Invalid task index.")
+    conn.close()
