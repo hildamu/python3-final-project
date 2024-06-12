@@ -35,4 +35,24 @@ def main():
         print("3. Mark Task as Complete")
         print("4. Delete Task")
         print("5. Exit")
-        choice = input("Enter your choice: ")              
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            task = input("Enter the task: ")
+            add_task(task, tasks)
+        elif choice == "2":
+            view_tasks(tasks)
+        elif choice == "3":
+            task_index = int(input("Enter the task index to mark as complete: "))
+            mark_complete(task_index, tasks)
+        elif choice == "4":
+            task_index = int(input("Enter the task index to delete: "))
+            delete_task(task_index, tasks)
+        elif choice == "5":
+            print("Exiting program. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
