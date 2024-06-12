@@ -1,5 +1,50 @@
 import sqlite3
 
+
+class Task:
+
+    def __init__(self, id, task, completed):
+        self.id = id
+        self.task = task
+        self.completed = completed
+        
+
+    def mark_complete(self):
+        self.completed = True
+
+    def __str__(self):
+        status = "✓" if self.completed else " "
+        return f"{self.id}. [{status}] {self.task}"
+
+
+class TaskList:
+
+    def __init__(self):
+        self.tasks = []
+
+    def add_task(self, task):
+        self.tasks.append(task)
+
+    def view_tasks(self):
+        if not self.tasks:
+            print("Your to-do list is empty.")
+            return
+        for task in self.tasks:
+            print(task)
+
+    def mark_all_complete(self):
+        for task in self.tasks:
+            task.mark_complete()
+
+    def delete_task(self, task_id):
+        for index, task in enumerate(self.tasks):
+            if task.id == task_id:
+                del self.tasks[index]
+                print(f"Task with ID {task_id} deleted.")
+                return  
+        print(f"Task with ID {task_id} not found.")
+
+
 def create_table():
     """Creates a 'tasks' table with 'id', 'task', and 'completed' columns."""
     conn = sqlite3.connect('todo.db')
@@ -10,82 +55,46 @@ def create_table():
     conn.close()
 
 
-def add_task(task):
+def create_task(task):
+    """Adds a new task to the database, creating a Task object and storing the due date (if provided) internally."""
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
     c.execute("INSERT INTO tasks (task, completed) VALUES (?, 0)", (task,))
     conn.commit()
     conn.close()
     print("Task added successfully!")
+    return Task(c.lastrowid, task, False)  
+
 
 def view_tasks():
+    """Retrieves and displays all tasks from the database, excluding due dates."""
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
     c.execute("SELECT * FROM tasks")
     rows = c.fetchall()
-    if rows:
-        print("Your to-do list:")
-        for index, row in enumerate(rows, start=1):
-            status = "✓" if row[2] else " "
-            print(f"{index}. [{status}] {row[1]}")
-    else:
-        print("Your to-do list is empty.")
+    task_list = TaskList()  
+    for row in rows:
+        task_list.add_task(Task(row[0], row[1], row[2]))  
+    task_list.view_tasks()  
     conn.close()
 
-def mark_complete(task_index):
+
+def mark_complete(task_id):
+    """Marks a task as completed based on its ID."""
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM tasks")
-    rows = c.fetchall()
-    if 0 < task_index <= len(rows):
-        c.execute("UPDATE tasks SET completed = 1 WHERE id =?", (rows[task_index - 1][0],))
-        conn.commit()
-        print("Task marked as complete!")
-    else:
-        print("Invalid task index.")
+    c.execute("UPDATE tasks SET completed = 1 WHERE id =?", (task_id,))
+    conn.commit()
     conn.close()
+    print(f"Task with ID {task_id} marked as complete.")
 
-def delete_task(task_index):
+
+def delete_task(task_id):
+    """Deletes a task from the database based on its ID."""
     conn = sqlite3.connect('todo.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM tasks")
-    rows = c.fetchall()
-    if 0 < task_index <= len(rows):
-        c.execute("DELETE FROM tasks WHERE id =?", (rows[task_index - 1][0],))
-        conn.commit()
-        print("Task deleted successfully!")
-    else:
-        print("Invalid task index.")
+    c.execute("DELETE FROM tasks WHERE id =?", (task_id,))
+    conn.commit()
     conn.close()
+    print(f"Task with ID {task_id} deleted.")
 
-def main():
-    create_table()
-
-    while True:
-        print("\nMenu:")
-        print("1. Add Task")
-        print("2. View Tasks")
-        print("3. Mark Task as Complete")
-        print("4. Delete Task")
-        print("5. Exit")
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            task = input("Enter the task: ")
-            add_task(task)
-        elif choice == "2":
-            view_tasks()
-        elif choice == "3":
-            task_index = int(input("Enter the task index to mark as complete: "))
-            mark_complete(task_index)
-        elif choice == "4":
-            task_index = int(input("Enter the task index to delete: "))
-            delete_task(task_index)
-        elif choice == "5":
-            print("Exiting program. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please try again.")
-
-if __name__ == "__main__":
-    main()
