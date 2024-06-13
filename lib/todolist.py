@@ -25,7 +25,7 @@ def delete_task(task_index, task_list):
     else:
         print("Invalid task index.")
 
-# Main function
+
 def main():
     tasks = []
 
