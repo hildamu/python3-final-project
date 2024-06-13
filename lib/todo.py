@@ -10,7 +10,10 @@ def setup_database():
         )
     ''')
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tasks (
+        DROP TABLE IF EXISTS tasks
+    ''')
+    cursor.execute('''
+        CREATE TABLE tasks (
             id INTEGER PRIMARY KEY,
             task TEXT NOT NULL,
             completed BOOLEAN NOT NULL CHECK (completed IN (0, 1)),
